@@ -21,23 +21,35 @@ export const SplashScreen = () => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500"
+          className="fixed inset-0 z-[9999] flex items-center justify-center"
         >
+          {/* GIF Background */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: "url('/splash-background.gif')",
+            }}
+          />
+          
+          {/* Optional overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/30" />
+
+          {/* Content */}
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="flex flex-col items-center gap-4 text-white"
+            className="relative z-10 flex flex-col items-center gap-4 text-white"
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/30 bg-white/10">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/30 bg-white/10 backdrop-blur-sm">
               <Flame className="h-8 w-8 text-white" />
             </div>
             <div className="text-center">
-              <p className="text-sm uppercase tracking-[0.3em] text-white/70">Loading</p>
-              <p className="text-3xl font-semibold">Pun Smong</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-white/90">Loading</p>
+              <p className="text-3xl font-semibold drop-shadow-lg">Pun Smong</p>
             </div>
-            <div className="h-1 w-40 overflow-hidden rounded-full bg-white/20">
+            <div className="h-1 w-40 overflow-hidden rounded-full bg-white/20 backdrop-blur-sm">
               <motion.div
                 initial={{ x: "-100%" }}
                 animate={{ x: "100%" }}
@@ -51,4 +63,3 @@ export const SplashScreen = () => {
     </AnimatePresence>
   );
 };
-
