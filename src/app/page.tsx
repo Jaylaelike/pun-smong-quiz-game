@@ -54,7 +54,7 @@ const LandingPage = () => {
         <div className="space-y-6">
       
           <h1 className="font-display text-4xl font-semibold leading-snug text-gray-950 md:text-6xl">
-            มาแข่งกัน <span className="text-gradient">ท่าคุณแน่จริง</span>
+            มาแข่งกัน <span className="text-gradient">ถ้าคุณแน่จริง</span>
           </h1>
           <p className="text-lg text-muted-foreground">
             Pun Smong คือเกมตอบคำถามแข่งความเร็ว โปรไฟล์ที่ปลอดภัย และกระดานคะแนนที่อัปเดตแบบเรียลไทม์
