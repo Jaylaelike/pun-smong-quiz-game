@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 210 10% 11%;
+  --muted: 210 16% 92%;
+  --muted-foreground: 210 8% 40%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 10% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 10% 11%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --primary: 259 94% 51%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 20% 96%;
+  --secondary-foreground: 210 10% 11%;
+  --accent: 43 96% 56%;
+  --accent-foreground: 210 10% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 259 94% 51%;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: 222 47% 11%;
+  --foreground: 0 0% 100%;
+  --muted: 220 15% 15%;
+  --muted-foreground: 220 14% 70%;
+  --popover: 220 25% 14%;
+  --popover-foreground: 0 0% 100%;
+  --card: 220 25% 14%;
+  --card-foreground: 0 0% 100%;
+  --border: 220 20% 25%;
+  --input: 220 20% 25%;
+  --primary: 259 94% 61%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 20% 20%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 43 90% 60%;
+  --accent-foreground: 220 30% 15%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 259 94% 61%;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-body), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-body), "Space Grotesk", system-ui, sans-serif;
+}
+
+.glass-panel {
+  @apply border border-white/20 bg-white/60 shadow-lg backdrop-blur;
+}
+
+.text-gradient {
+  background: linear-gradient(120deg, #4338ca, #ec4899 60%, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glow {
+  position: relative;
+  isolation: isolate;
+}
+
+.glow::after {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  background: radial-gradient(circle, rgba(99,102,241,0.25), transparent 50%);
+  filter: blur(30px);
+  z-index: -1;
+  opacity: 0.7;
+}
+
+::selection {
+  background-color: rgba(99, 102, 241, 0.32);
+  color: hsl(var(--foreground));
+}
+

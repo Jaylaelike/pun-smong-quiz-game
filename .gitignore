@@ -1,0 +1,26 @@
+# dependencies
+node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/.next
+/out
+
+# misc
+*.log
+.DS_Store
+*.local
+
+# prisma
+/prisma/dev.db
+/prisma/dev.db-journal
+
+# env
+.env
+.env.local
+.env*.local
+
