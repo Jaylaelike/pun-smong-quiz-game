@@ -21,15 +21,15 @@ export const LeaderboardClient = () => {
 
   return (
     <div className="space-y-10">
-      <div className="rounded-3xl border border-white/70 bg-white/90 p-8 shadow">
+      <div className="rounded-3xl border border-white/20 bg-white/10 backdrop-blur-lg p-8 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-sm uppercase text-primary">ผู้เล่นอันดับต้น</p>
-            <h1 className="text-4xl font-semibold">กระดานคะแนน</h1>
-            <p className="text-muted-foreground">คะแนนจะอัปเดตหลังจากทุกคำตอบ โดยคำนวณโบนัสด้วย</p>
+            <p className="text-sm uppercase text-purple-300">ผู้เล่นอันดับต้น</p>
+            <h1 className="text-4xl font-bold text-white">กระดานคะแนน</h1>
+            <p className="text-white/70 mt-1">คะแนนจะอัปเดตหลังจากทุกคำตอบ โดยคำนวณโบนัสด้วย</p>
           </div>
           {isFetching && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-white/70">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>กำลังอัปเดต...</span>
             </div>

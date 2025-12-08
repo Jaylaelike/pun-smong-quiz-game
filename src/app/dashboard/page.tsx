@@ -41,57 +41,66 @@ const DashboardPage = async () => {
 
   return (
     <div className="space-y-10">
-      <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-sm">
-        <p className="text-sm uppercase text-primary">แดชบอร์ด</p>
-        <h1 className="text-3xl font-semibold">ยินดีต้อนรับกลับ, {data.user.username ?? "ผู้เล่น"} 👋</h1>
-        <p className="text-muted-foreground">ติดตามสถิติของคุณ ตรวจสอบคะแนน และเข้าร่วมเกมถัดไป</p>
+      <div className="rounded-3xl border border-white/20 bg-white/10 backdrop-blur-lg p-6 shadow-xl">
+        <p className="text-sm uppercase text-purple-300">แดชบอร์ด</p>
+        <h1 className="text-3xl font-bold text-white">ยินดีต้อนรับกลับ, {data.user.username ?? "ผู้เล่น"} 👋</h1>
+        <p className="text-white/70 mt-1">ติดตามสถิติของคุณ ตรวจสอบคะแนน และเข้าร่วมเกมถัดไป</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         {statCards.map((stat) => (
-          <Card key={stat.label} className="border-none bg-gradient-to-br p-[1px]" style={{ backgroundImage: `linear-gradient(135deg, rgba(99,102,241,0.4), transparent)` }}>
-            <div className={cn("rounded-3xl bg-white/95 p-5", stat.gradient && `bg-gradient-to-br ${stat.gradient}`)}>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/70 text-primary shadow">
+          <Card key={stat.label} className="border border-white/20 bg-white/10 backdrop-blur-lg hover:bg-white/15 transition-colors">
+            <div className="p-5">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/30 to-indigo-500/30 text-white shadow-lg">
                 <stat.icon className="h-5 w-5" />
               </div>
-              <p className="text-sm uppercase text-muted-foreground">{stat.label}</p>
-              <p className="text-4xl font-semibold text-gray-900">{stat.value}</p>
+              <p className="text-sm uppercase text-purple-300">{stat.label}</p>
+              <p className="text-4xl font-bold text-white mt-2">{stat.value}</p>
             </div>
           </Card>
         ))}
       </div>
 
-      <div className="flex flex-col gap-6 rounded-3xl border border-primary/20 bg-gradient-to-r from-indigo-600/90 via-purple-600/90 to-pink-500/90 p-6 text-white shadow-xl md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-6 rounded-3xl border border-white/20 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 p-6 text-white shadow-xl md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm uppercase text-white/80">พร้อมสำหรับเกมถัดไป?</p>
-          <p className="text-3xl font-semibold">เริ่มเกมใหม่เลย</p>
+          <p className="text-sm uppercase text-white/90">พร้อมสำหรับเกมถัดไป?</p>
+          <p className="text-3xl font-bold">เริ่มเกมใหม่เลย</p>
         </div>
-        <Button size="lg" asChild variant="secondary" className="text-primary">
+        <Button size="lg" asChild className="bg-white text-purple-600 hover:bg-white/90 shadow-lg">
           <a href="/quiz">เริ่มเล่น</a>
         </Button>
       </div>
 
       <section className="space-y-4">
         <div>
-          <p className="text-sm uppercase text-primary">กิจกรรม</p>
-          <h2 className="text-xl font-semibold">คำตอบล่าสุด</h2>
+          <p className="text-sm uppercase text-purple-300">กิจกรรม</p>
+          <h2 className="text-xl font-bold text-white">คำตอบล่าสุด</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          {data.user.responses.length === 0 && <p className="text-muted-foreground">ยังไม่มีคำตอบ — เริ่มเล่นเลย!</p>}
+          {data.user.responses.length === 0 && (
+            <div className="col-span-2 rounded-2xl border border-white/20 bg-white/5 p-8 text-center">
+              <p className="text-white/70">ยังไม่มีคำตอบ — เริ่มเล่นเลย!</p>
+            </div>
+          )}
           {data.user.responses.map((response) => (
-            <Card key={response.id} className={cn("border-0 shadow-sm", response.isCorrect ? "bg-green-50/80" : "bg-rose-50/80")}>
+            <Card key={response.id} className={cn(
+              "border border-white/20 backdrop-blur-lg transition-all hover:scale-[1.02]",
+              response.isCorrect 
+                ? "bg-green-500/20 hover:bg-green-500/30" 
+                : "bg-rose-500/20 hover:bg-rose-500/30"
+            )}>
               <CardHeader>
-                <CardTitle className="text-lg text-gray-900">{response.question.question}</CardTitle>
-                <CardDescription className="text-sm">
+                <CardTitle className="text-lg text-white">{response.question.question}</CardTitle>
+                <CardDescription className="text-sm text-white/70">
                   ความยาก: {response.question.difficulty} · {new Intl.DateTimeFormat("th-TH", { month: "short", day: "numeric" }).format(response.answeredAt)}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-1 text-sm text-muted-foreground">
+              <CardContent className="space-y-1 text-sm text-white/80">
                 <p>
-                  คำตอบของคุณ: <span className="font-medium text-gray-900">{response.answer}</span>
+                  คำตอบของคุณ: <span className="font-medium text-white">{response.answer}</span>
                 </p>
                 <p>คำตอบที่ถูกต้อง: {response.question.correctAnswer}</p>
-                <p>คะแนนที่ได้: +{response.points}</p>
+                <p className="font-semibold text-green-300">คะแนนที่ได้: +{response.points}</p>
               </CardContent>
             </Card>
           ))}

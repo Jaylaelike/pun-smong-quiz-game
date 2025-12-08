@@ -14,11 +14,65 @@ const assertAdmin = async () => {
   if (!isAdmin(user)) throw new Error("Forbidden");
 };
 
-export const listQuestions = async () => {
-  const questions = await prisma.question.findMany({
-    orderBy: { createdAt: "desc" }
-  });
-  return questions;
+type ListQuestionsParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  difficulty?: string;
+  isActive?: boolean;
+  sortBy?: "createdAt" | "updatedAt" | "points" | "difficulty";
+  sortOrder?: "asc" | "desc";
+};
+
+export const listQuestions = async (params: ListQuestionsParams = {}) => {
+  const {
+    page = 1,
+    limit = 20,
+    search = "",
+    difficulty,
+    isActive,
+    sortBy = "createdAt",
+    sortOrder = "desc"
+  } = params;
+
+  const skip = (page - 1) * limit;
+  const where: any = {};
+
+  if (search) {
+    where.question = {
+      contains: search,
+      mode: "insensitive"
+    };
+  }
+
+  if (difficulty) {
+    where.difficulty = difficulty;
+  }
+
+  if (isActive !== undefined) {
+    where.isActive = isActive;
+  }
+
+  const [questions, total] = await Promise.all([
+    prisma.question.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { [sortBy]: sortOrder }
+    }),
+    prisma.question.count({ where })
+  ]);
+
+  return {
+    questions,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasMore: skip + questions.length < total
+    }
+  };
 };
 
 export const createQuestion = async (data: {
@@ -70,5 +124,43 @@ export const deleteQuestion = async (id: string) => {
     where: { id }
   });
   revalidatePath("/admin/questions");
+};
+
+export const bulkCreateQuestions = async (questions: Array<{
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  difficulty: string;
+  category?: string;
+  points?: number;
+  isActive?: boolean;
+}>) => {
+  await assertAdmin();
+  
+  const result = await prisma.$transaction(
+    async (tx) => {
+      return Promise.all(
+        questions.map((q) =>
+          tx.question.create({
+            data: {
+              question: q.question,
+              options: JSON.stringify(q.options),
+              correctAnswer: q.correctAnswer,
+              difficulty: q.difficulty,
+              category: q.category,
+              points: q.points ?? 10,
+              isActive: q.isActive ?? true
+            }
+          })
+        )
+      );
+    },
+    {
+      timeout: 30000 // 30 seconds for large batches
+    }
+  );
+
+  revalidatePath("/admin/questions");
+  return result;
 };
 

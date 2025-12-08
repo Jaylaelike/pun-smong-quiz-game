@@ -33,6 +33,25 @@ export const SiteHeader = () => {
     checkAdmin();
   }, []);
 
+  // Hide header on all pages for mobile-first design
+  // Only show on admin pages that need navigation
+  const hideNavbarPages = [
+    "/",
+    "/quiz",
+    "/dashboard",
+    "/leaderboard",
+    "/admin/questions/new",
+    "/admin/questions"
+  ];
+  
+  const shouldHide = hideNavbarPages.some(page => 
+    pathname === page || pathname?.startsWith(page)
+  ) || pathname?.match(/^\/admin\/questions\/[^/]+$/);
+
+  if (shouldHide) {
+    return null;
+  }
+
   const links = [
     ...baseLinks,
     ...(isAdmin ? [{ href: "/admin", label: "ผู้ดูแลระบบ" }] : [])

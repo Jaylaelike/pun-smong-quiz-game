@@ -34,7 +34,7 @@ const getOptionList = (question: Question | null) => {
   return parseQuestionOptions(question.options);
 };
 
-const optionLetter = (index: number) => String.fromCharCode(65 + index);
+const optionNumber = (index: number) => String(index + 1).padStart(2, "0");
 
 export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
   const router = useRouter();
@@ -43,12 +43,17 @@ export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
   const [answering, startTransition] = useTransition();
   const [answerState, setAnswerState] = useState<AnswerState>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
 
   useEffect(() => {
     setQuestion(initialQuestion);
     setTimeLeft(QUESTION_DURATION_MS);
     setAnswerState(null);
     setHasSubmitted(false);
+    if (!initialQuestion) {
+      // Reset correct answers when starting a new quiz session
+      setCorrectAnswers(0);
+    }
   }, [initialQuestion]);
 
   useEffect(() => {
@@ -91,6 +96,9 @@ export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
           score: response.score,
           correctAnswer: response.correctAnswer
         });
+        if (response.isCorrect) {
+          setCorrectAnswers(prev => prev + 1);
+        }
         toast.success(response.isCorrect ? "ถูกต้อง! 🎉" : "คำตอบผิด", {
           description: response.isCorrect ? `+${response.score} คะแนน` : `คำตอบที่ถูกต้อง: ${response.correctAnswer}`
         });
@@ -106,13 +114,9 @@ export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
       if (!question || hasSubmitted || answerState) return;
-      const key = event.key.toLowerCase();
-      const optionIndex =
-        key >= "1" && key <= "4"
-          ? Number(key) - 1
-          : key >= "a" && key <= "d"
-            ? key.charCodeAt(0) - 97
-            : -1;
+      const key = event.key;
+      // Support both number keys (1-4) and number pad (1-4)
+      const optionIndex = key >= "1" && key <= "4" ? Number(key) - 1 : -1;
       const option = optionList[optionIndex];
       if (option) {
         event.preventDefault();
@@ -124,43 +128,71 @@ export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
   }, [answerState, handleSubmit, hasSubmitted, optionList, question]);
 
   if (!question) {
+    const totalQuestions = stats.total;
+    const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+    
     return (
-      <Card className="mx-auto mt-12 max-w-2xl text-center">
-        <CardHeader>
-          <ShieldCheck className="mx-auto h-10 w-10 text-primary" />
-          <CardTitle>ตอบครบทุกข้อแล้ว!</CardTitle>
-          <CardDescription>ไม่มีคำถามเหลือแล้ว กลับมาดูใหม่เร็วๆ นี้เพื่อเล่นต่อ</CardDescription>
-        </CardHeader>
-        <CardFooter className="justify-center">
-          <Button onClick={() => router.push("/leaderboard")} variant="outline">
-            ดูกระดานคะแนน
-          </Button>
-        </CardFooter>
-      </Card>
+      <div className="mx-auto max-w-2xl space-y-8 text-center">
+        <div className="space-y-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-white">Results</h1>
+          <p className="text-lg text-white/80">Total correct answers</p>
+          <p className="text-xl text-white/70">{correctAnswers} out of {totalQuestions} Questions</p>
+        </div>
+        
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center">
+            {[...Array(20)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-2 h-2 rounded-full animate-pulse"
+                style={{
+                  left: `${50 + 30 * Math.cos((i * 2 * Math.PI) / 20)}%`,
+                  top: `${50 + 30 * Math.sin((i * 2 * Math.PI) / 20)}%`,
+                  backgroundColor: ['#a855f7', '#f97316', '#3b82f6', '#10b981'][i % 4],
+                  animationDelay: `${i * 0.1}s`
+                }}
+              />
+            ))}
+          </div>
+          <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 flex items-center justify-center shadow-2xl border-8 border-yellow-300">
+            <span className="text-6xl md:text-7xl font-bold text-gray-900">{percentage}</span>
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <p className="text-lg text-white/80">Your final score is</p>
+          <p className="text-4xl font-bold text-white">{stats.score}</p>
+        </div>
+        
+        <Button 
+          onClick={() => router.push("/leaderboard")} 
+          size="lg"
+          className="bg-purple-600 hover:bg-purple-700 text-white text-lg py-6 px-8 shadow-xl"
+        >
+          <span className="mr-2">🔄</span>
+          Try Again
+        </Button>
+      </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="rounded-3xl border border-white/70 bg-white/90 px-6 py-4 shadow">
-        <div className="grid gap-4 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid-cols-3">
+      <div className="rounded-3xl border border-white/20 bg-white/10 backdrop-blur-lg px-6 py-4 shadow-xl">
+        <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] text-slate-500">คะแนนรวม</p>
-            <p className="text-2xl font-semibold text-primary">{stats.score}</p>
+            <p className="text-sm text-purple-300 mb-1">คะแนนรวม</p>
+            <p className="text-3xl font-bold text-white">{stats.score}</p>
           </div>
-          <div>
-            <p className="text-[11px] text-slate-500">ความคืบหน้า</p>
-            <p className="text-lg text-gray-900">
+          <div className="text-right">
+            <p className="text-sm text-purple-300 mb-1">ความคืบหน้า</p>
+            <p className="text-2xl font-bold text-white">
               {stats.answered}/{stats.total}
             </p>
           </div>
-          <div>
-            <p className="text-[11px] text-slate-500">ปุ่มลัด</p>
-            <p className="text-gray-900">กด 1-4 หรือ A-D เพื่อตอบ</p>
-          </div>
         </div>
       </div>
-      <Card className="overflow-hidden border-2 relative">
+      <Card className="overflow-hidden border-2 border-white/20 bg-white/10 backdrop-blur-lg relative shadow-xl">
         <AnimatePresence>
           {answerState?.isCorrect && (
               <motion.div
@@ -177,20 +209,29 @@ export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
           )}
         </AnimatePresence>
         <CardHeader>
-          <CardDescription className="flex items-center justify-between text-sm font-medium">
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">หมวดหมู่ · {question.category ?? "ทั่วไป"}</span>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-600">ความยาก · {question.difficulty}</span>
-          </CardDescription>
-          <CardTitle className="text-3xl">{question.question}</CardTitle>
+          <div className="flex items-center justify-between mb-4">
+            <CardDescription className="text-lg font-semibold text-white">
+              Level {question.difficulty === "easy" ? "1" : question.difficulty === "medium" ? "2" : "3"}
+            </CardDescription>
+            <CardDescription className="text-lg font-semibold text-white">
+              {stats.answered + 1}/{stats.total}
+            </CardDescription>
+          </div>
+          <CardTitle className="text-2xl md:text-3xl text-white font-bold leading-tight">{question.question}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <div className={cn("flex items-center justify-between text-sm font-medium text-slate-600", timerPercent < 35 && "text-orange-500", timerPercent < 20 && "text-red-500")}>
+            <div className={cn("flex items-center justify-between text-sm font-medium text-white", timerPercent < 35 && "text-orange-300", timerPercent < 20 && "text-red-300")}>
               <span>เวลาที่เหลือ</span>
-              <span>{Math.max(Math.ceil(timeLeft / 1000), 0)}s</span>
+              <span className="font-bold">{Math.max(Math.ceil(timeLeft / 1000), 0)}s</span>
             </div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
-              <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-amber-300 to-rose-400 transition-all" style={{ width: `${timerPercent}%` }} />
+            <div className="h-3 w-full overflow-hidden rounded-full bg-white/20">
+              <div className={cn(
+                "h-full rounded-full transition-all",
+                timerPercent > 50 ? "bg-gradient-to-r from-emerald-400 to-green-500" :
+                timerPercent > 20 ? "bg-gradient-to-r from-amber-400 to-orange-500" :
+                "bg-gradient-to-r from-rose-400 to-red-500"
+              )} style={{ width: `${timerPercent}%` }} />
             </div>
           </div>
           <div className="grid gap-4">
@@ -207,38 +248,54 @@ export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
                     onClick={() => handleSubmit(option)}
                     disabled={answering || !!answerState}
                     className={cn(
-                      "flex items-center gap-4 rounded-2xl border p-4 text-left text-lg font-medium transition focus:outline-none focus-visible:ring-2",
+                      "flex items-center gap-4 rounded-xl border-2 p-5 text-left transition focus:outline-none focus-visible:ring-2",
                       answerState
                         ? isCorrectAnswer
-                          ? "border-green-400 bg-green-50 animate-correct-flash"
-                          : "border-destructive/50 animate-shake-wrong"
-                        : "hover:border-primary hover:bg-primary/5"
+                          ? "border-green-400 bg-green-500/40 text-white animate-correct-flash shadow-lg shadow-green-500/30"
+                          : "border-red-400/50 bg-red-500/20 text-white animate-shake-wrong"
+                        : "border-white/20 bg-white/5 text-white hover:border-purple-400 hover:bg-purple-500/20 hover:scale-[1.02]"
                     )}
                   >
-                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm font-semibold text-slate-500">{optionLetter(index)}</span>
-                    <span>{option}</span>
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-white/30 bg-white/10 text-base font-bold text-white backdrop-blur flex-shrink-0">
+                      {optionNumber(index)}
+                    </span>
+                    <span className="text-lg font-medium flex-1">{option}</span>
                   </motion.button>
                 );
               })}
             </AnimatePresence>
           </div>
         </CardContent>
-        <CardFooter className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-            {answerState ? (
-              <p className="font-medium text-gray-700">
-                {answerState.isCorrect ? "คำตอบถูกต้อง" : "คำตอบผิด"} · +{answerState.score} คะแนน
-              </p>
-            ) : (
-              <p>ตอบได้ครั้งเดียว — โบนัสขึ้นอยู่กับความเร็ว</p>
-            )}
-            {answerState && (
-              <Button variant="outline" size="sm" onClick={() => router.refresh()}>
-                คำถามถัดไป
+        <CardFooter className="flex items-center justify-between pt-6">
+          {answerState ? (
+            <div className="flex items-center justify-between w-full gap-4">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                onClick={() => router.refresh()} 
+                className="flex-1 border-white/20 bg-white/10 text-white hover:bg-white/20 text-base py-6"
+              >
+                Previous
               </Button>
-            )}
-          </div>
-          {answering && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
+              <Button 
+                variant="default" 
+                size="lg" 
+                onClick={() => router.refresh()} 
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-base py-6"
+              >
+                Next
+              </Button>
+            </div>
+          ) : (
+            <div className="w-full text-center">
+              <p className="text-white/70 text-sm">ตอบได้ครั้งเดียว — โบนัสขึ้นอยู่กับความเร็ว</p>
+              {answering && (
+                <div className="mt-4 flex justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-white" />
+                </div>
+              )}
+            </div>
+          )}
         </CardFooter>
       </Card>
     </div>

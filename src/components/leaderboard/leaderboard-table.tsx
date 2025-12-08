@@ -25,12 +25,12 @@ export const LeaderboardTable = ({ rows }: LeaderboardTableProps) => {
   return (
     <div className="space-y-6">
       {topPlayer && (
-        <Card className="border-2 border-yellow-400 bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 shadow-2xl overflow-hidden">
+        <Card className="border-2 border-yellow-400 bg-gradient-to-br from-yellow-500/20 via-amber-500/20 to-orange-500/20 backdrop-blur-lg shadow-2xl overflow-hidden">
           <CardContent className="p-8">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full blur-2xl opacity-50 animate-pulse" />
-                <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 text-white shadow-2xl border-4 border-white overflow-hidden">
+                <div className="relative flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 text-white shadow-2xl border-4 border-yellow-300 overflow-hidden">
                   {topPlayer.imageUrl ? (
                     <Image
                       src={topPlayer.imageUrl}
@@ -50,21 +50,21 @@ export const LeaderboardTable = ({ rows }: LeaderboardTableProps) => {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-2">
-                  <Trophy className="h-6 w-6 text-yellow-600" />
-                  <h2 className="text-3xl font-bold text-gray-900">ยินดีด้วย! 🎉</h2>
-                  <Trophy className="h-6 w-6 text-yellow-600" />
+                  <Trophy className="h-6 w-6 text-yellow-300" />
+                  <h2 className="text-3xl font-bold text-white">ยินดีด้วย! 🎉</h2>
+                  <Trophy className="h-6 w-6 text-yellow-300" />
                 </div>
-                <p className="text-xl font-semibold text-gray-700">{topPlayer.username}</p>
-                <p className="text-sm text-muted-foreground">แชมป์อันดับ 1</p>
+                <p className="text-xl font-semibold text-white">{topPlayer.username}</p>
+                <p className="text-sm text-white/70">แชมป์อันดับ 1</p>
                 <div className="flex items-center justify-center gap-4 pt-2">
-                  <div className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 shadow">
-                    <Sparkles className="h-4 w-4 text-yellow-600" />
-                    <span className="text-lg font-bold text-gray-900">{topPlayer.totalScore}</span>
-                    <span className="text-sm text-muted-foreground">คะแนน</span>
+                  <div className="flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-4 py-2 border border-white/20">
+                    <Sparkles className="h-4 w-4 text-yellow-300" />
+                    <span className="text-lg font-bold text-white">{topPlayer.totalScore}</span>
+                    <span className="text-sm text-white/70">คะแนน</span>
                   </div>
-                  <div className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 shadow">
-                    <span className="text-lg font-bold text-gray-900">{topPlayer.questionsAnswered}</span>
-                    <span className="text-sm text-muted-foreground">คำถาม</span>
+                  <div className="flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-4 py-2 border border-white/20">
+                    <span className="text-lg font-bold text-white">{topPlayer.questionsAnswered}</span>
+                    <span className="text-sm text-white/70">คำถาม</span>
                   </div>
                 </div>
               </div>
@@ -73,21 +73,21 @@ export const LeaderboardTable = ({ rows }: LeaderboardTableProps) => {
         </Card>
       )}
 
-      <Card className="border-white/70 bg-white/95 shadow-lg">
+      <Card className="border-white/20 bg-white/10 backdrop-blur-lg shadow-xl">
         <CardHeader className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-2xl">
-            <Crown className="h-6 w-6 text-amber-500" /> 50 อันดับแรก
+          <CardTitle className="flex items-center gap-2 text-2xl text-white">
+            <Crown className="h-6 w-6 text-yellow-300" /> 50 อันดับแรก
           </CardTitle>
         </CardHeader>
         <CardContent>
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>อันดับ</TableHead>
-              <TableHead>ผู้เล่น</TableHead>
-              <TableHead>คะแนน</TableHead>
-              <TableHead>คำถาม</TableHead>
-              <TableHead>ตอบล่าสุด</TableHead>
+            <TableRow className="border-white/20 hover:bg-white/5">
+              <TableHead className="text-white/80">อันดับ</TableHead>
+              <TableHead className="text-white/80">ผู้เล่น</TableHead>
+              <TableHead className="text-white/80">คะแนน</TableHead>
+              <TableHead className="text-white/80">คำถาม</TableHead>
+              <TableHead className="text-white/80">ตอบล่าสุด</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -122,8 +122,8 @@ export const LeaderboardTable = ({ rows }: LeaderboardTableProps) => {
               };
 
               return (
-                <TableRow key={row.id} className={row.rank <= 3 ? "bg-gradient-to-r from-amber-50/80 to-white" : undefined}>
-                  <TableCell className="font-semibold text-slate-700">
+                <TableRow key={row.id} className={`border-white/20 hover:bg-white/5 ${row.rank <= 3 ? "bg-gradient-to-r from-yellow-500/10 to-amber-500/10" : ""}`}>
+                  <TableCell className="font-semibold text-white">
                     <div className="flex items-center gap-2">
                       {getRankBadge()}
                     </div>
@@ -148,7 +148,7 @@ export const LeaderboardTable = ({ rows }: LeaderboardTableProps) => {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600 overflow-hidden">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white border border-white/20 overflow-hidden">
                         {row.imageUrl ? (
                           <Image
                             src={row.imageUrl}
@@ -163,13 +163,13 @@ export const LeaderboardTable = ({ rows }: LeaderboardTableProps) => {
                         )}
                       </div>
                     )}
-                    <span className={`font-medium ${row.rank === 1 ? "text-yellow-700 text-lg" : "text-gray-900"}`}>
+                    <span className={`font-medium ${row.rank === 1 ? "text-yellow-300 text-lg" : "text-white"}`}>
                       {row.username}
                     </span>
                   </TableCell>
-                  <TableCell className="text-gray-900">{row.totalScore}</TableCell>
-                  <TableCell className="text-muted-foreground">{row.questionsAnswered}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
+                  <TableCell className="text-white">{row.totalScore}</TableCell>
+                  <TableCell className="text-white/70">{row.questionsAnswered}</TableCell>
+                  <TableCell className="text-white/70 text-sm">
                     {row.lastAnsweredAt
                       ? new Intl.DateTimeFormat("th-TH", {
                           year: "numeric",
@@ -185,13 +185,13 @@ export const LeaderboardTable = ({ rows }: LeaderboardTableProps) => {
             })}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-white/70">
                   ยังไม่มีคะแนน — เป็นคนแรกที่เล่นเลย!
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
-          <TableCaption>อันดับใช้ช่วงเวลาที่เลือก</TableCaption>
+          <TableCaption className="text-white/60">อันดับใช้ช่วงเวลาที่เลือก</TableCaption>
         </Table>
       </CardContent>
     </Card>

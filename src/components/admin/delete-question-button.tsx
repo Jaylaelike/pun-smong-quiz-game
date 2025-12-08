@@ -9,9 +9,10 @@ import { Button, type ButtonProps } from "@/components/ui/button";
 
 type DeleteQuestionButtonProps = {
   questionId: string;
+  onDelete?: () => void;
 } & ButtonProps;
 
-export const DeleteQuestionButton = ({ questionId, children, ...props }: DeleteQuestionButtonProps) => {
+export const DeleteQuestionButton = ({ questionId, onDelete, children, ...props }: DeleteQuestionButtonProps) => {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -25,6 +26,7 @@ export const DeleteQuestionButton = ({ questionId, children, ...props }: DeleteQ
           try {
             await deleteQuestion(questionId);
             toast.success("ลบคำถามแล้ว");
+            onDelete?.();
             router.refresh();
           } catch {
             toast.error("ลบคำถามไม่สำเร็จ");
