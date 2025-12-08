@@ -54,7 +54,7 @@ export const HeroAnimated = () => {
       <div className="space-y-3">
         <h1 className="font-display text-5xl md:text-7xl font-bold text-white">
           Pun Sa-mong <br />
-          (ปั่น สมอง) ...
+          (ปั่น สมอง)
         </h1>
         <h2 className="text-3xl md:text-5xl font-bold text-white">เล่นเลย!</h2>
         <p className="text-lg md:text-xl text-white/80">Play now and Level up</p>
