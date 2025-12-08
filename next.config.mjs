@@ -9,6 +9,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "**.clerk.accounts.dev"
+      },
+      {
+        protocol: "https",
+        hostname: "56fwnhyzti.ufs.sh"
       }
     ]
   }

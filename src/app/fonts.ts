@@ -1,15 +1,15 @@
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Kanit } from "next/font/google";
 
-export const bodyFont = Inter({
-  subsets: ["latin"],
+export const bodyFont = Kanit({
+  subsets: ["latin", "thai"],
   variable: "--font-body",
-  display: "swap"
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"]
 });
 
-export const displayFont = Space_Grotesk({
-  subsets: ["latin"],
+export const displayFont = Kanit({
+  subsets: ["latin", "thai"],
   variable: "--font-display",
-  weight: ["400", "500", "600", "700"],
-  display: "swap"
+  display: "swap",
+  weight: ["400", "500", "600", "700"]
 });
-

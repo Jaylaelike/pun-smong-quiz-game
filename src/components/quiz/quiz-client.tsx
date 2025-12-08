@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
@@ -190,8 +190,10 @@ export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
           size="lg"
           className="bg-purple-600 hover:bg-purple-700 text-white text-lg py-6 px-8 shadow-xl"
         >
-          <span className="mr-2">🔄</span>
-          Try Again
+          <span className="mr-2">
+            <Trophy />
+          </span>
+          ไปหน้ากระดานคะแนน
         </Button>
       </div>
     );

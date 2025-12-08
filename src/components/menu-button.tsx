@@ -34,7 +34,13 @@ export const MenuButton = () => {
   const menuItems = [
     {
       icon: Activity,
-      label: "Activity",
+      label: "หน้าหลัก",
+      href: "/",
+      show: true
+    },
+    {
+      icon: Activity,
+      label: "กิจกรรม",
       href: "/dashboard",
       show: true
     },
@@ -46,13 +52,13 @@ export const MenuButton = () => {
     },
     {
       icon: Trophy,
-      label: "Leaderboard",
+      label: "กระดานคะแนน",
       href: "/leaderboard",
       show: true
     },
     {
       icon: User,
-      label: "My Account",
+      label: "บัญชีของฉัน",
       href: "/profile",
       show: true
     }
