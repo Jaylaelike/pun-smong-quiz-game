@@ -51,20 +51,20 @@ export const LeaderboardTable = ({ rows }: LeaderboardTableProps) => {
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-2">
                   <Trophy className="h-6 w-6 text-yellow-300" />
-                  <h2 className="text-3xl font-bold text-white">ยินดีด้วย! 🎉</h2>
+                  <h2 className="text-3xl font-bold black-white">ยินดีด้วย! 🎉</h2>
                   <Trophy className="h-6 w-6 text-yellow-300" />
                 </div>
-                <p className="text-xl font-semibold text-white">{topPlayer.username}</p>
-                <p className="text-sm text-white/70">แชมป์อันดับ 1</p>
+                <p className="text-xl font-semibold text-black">{topPlayer.username}</p>
+                <p className="text-sm text-black/70">แชมป์อันดับ 1</p>
                 <div className="flex items-center justify-center gap-4 pt-2">
                   <div className="flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-4 py-2 border border-white/20">
                     <Sparkles className="h-4 w-4 text-yellow-300" />
-                    <span className="text-lg font-bold text-white">{topPlayer.totalScore}</span>
-                    <span className="text-sm text-white/70">คะแนน</span>
+                    <span className="text-lg font-bold text-black">{topPlayer.totalScore}</span>
+                    <span className="text-sm text-black/70">คะแนน</span>
                   </div>
                   <div className="flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-4 py-2 border border-white/20">
-                    <span className="text-lg font-bold text-white">{topPlayer.questionsAnswered}</span>
-                    <span className="text-sm text-white/70">คำถาม</span>
+                    <span className="text-lg font-bold text-black">{topPlayer.questionsAnswered}</span>
+                    <span className="text-sm text-black/70">คำถาม</span>
                   </div>
                 </div>
               </div>

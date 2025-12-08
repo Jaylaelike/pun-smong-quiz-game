@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
 import type { Question } from "@prisma/client";
 import { toast } from "sonner";
 
@@ -38,6 +40,7 @@ const optionNumber = (index: number) => String(index + 1).padStart(2, "0");
 
 export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
   const router = useRouter();
+  const { user } = useUser();
   const [question, setQuestion] = useState(initialQuestion);
   const [timeLeft, setTimeLeft] = useState(QUESTION_DURATION_MS);
   const [answering, startTransition] = useTransition();
@@ -135,7 +138,7 @@ export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
       <div className="mx-auto max-w-2xl space-y-8 text-center">
         <div className="space-y-4">
           <h1 className="text-3xl md:text-4xl font-bold text-white">Results</h1>
-          <p className="text-lg text-white/80">Total correct answers</p>
+          <p className="text-lg text-white/80">คุณได้ตอบคำถามไปแล้ว !!!</p>
           <p className="text-xl text-white/70">{correctAnswers} out of {totalQuestions} Questions</p>
         </div>
         
@@ -154,8 +157,26 @@ export const QuizClient = ({ initialQuestion, stats }: QuizClientProps) => {
               />
             ))}
           </div>
-          <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 flex items-center justify-center shadow-2xl border-8 border-yellow-300">
-            <span className="text-6xl md:text-7xl font-bold text-gray-900">{percentage}</span>
+          <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 flex items-center justify-center shadow-2xl border-8 border-yellow-300 overflow-hidden">
+            {user?.imageUrl ? (
+              <Image
+                src={user.imageUrl}
+                alt={user.firstName || user.emailAddresses[0]?.emailAddress || "User"}
+                width={256}
+                height={256}
+                className="w-full h-full object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600">
+                <span className="text-6xl md:text-7xl font-bold text-gray-900">
+                  {user?.firstName?.charAt(0)?.toUpperCase() || 
+                   user?.emailAddresses[0]?.emailAddress?.charAt(0).toUpperCase() || 
+                   "U"}
+                </span>
+              </div>
+            )}
+            
           </div>
         </div>
         
