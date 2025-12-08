@@ -10,32 +10,78 @@ export const getLeaderboard = async (
   range: LeaderboardRange = "all"
 ) => {
   /* -------------------------------------------------
-   * 1.  ALL-TIME  –  order by first answer ever
+   * 1.  ALL-TIME  –  order by first CORRECT answer
    * ------------------------------------------------- */
   if (range === "all") {
-    /* pull every response so we can compute the first answeredAt per user */
-    const allResponses = await prisma.userResponse.findMany({
-      select: { userId: true, answeredAt: true }
+    /* Only get correct responses */
+    const correctResponses = await prisma.userResponse.findMany({
+      where: { isCorrect: true },
+      select: { userId: true, answeredAt: true, questionId: true },
+      orderBy: { answeredAt: "asc" }
     });
 
-    /* map userId → earliest answer */
-    const firstAnswerMap = new Map<string, Date>();
-    for (const r of allResponses) {
-      const cur = firstAnswerMap.get(r.userId);
-      if (!cur || r.answeredAt < cur) firstAnswerMap.set(r.userId, r.answeredAt);
+    /* For each question, find who answered correctly first */
+    const questionFirstCorrect = new Map<string, { userId: string; answeredAt: Date }>();
+    for (const response of correctResponses) {
+      const existing = questionFirstCorrect.get(response.questionId);
+      if (!existing || response.answeredAt < existing.answeredAt) {
+        questionFirstCorrect.set(response.questionId, {
+          userId: response.userId,
+          answeredAt: response.answeredAt
+        });
+      }
     }
 
+    /* Calculate user stats */
+    const userStats = new Map<string, { 
+      firstCorrectCount: number; 
+      totalCorrect: number; 
+      earliestAnswer: Date;
+    }>();
+    
+    for (const response of correctResponses) {
+      const isFirst = questionFirstCorrect.get(response.questionId)?.userId === response.userId;
+      const current = userStats.get(response.userId);
+      
+      if (!current) {
+        userStats.set(response.userId, {
+          firstCorrectCount: isFirst ? 1 : 0,
+          totalCorrect: 1,
+          earliestAnswer: response.answeredAt
+        });
+      } else {
+        userStats.set(response.userId, {
+          firstCorrectCount: current.firstCorrectCount + (isFirst ? 1 : 0),
+          totalCorrect: current.totalCorrect + 1,
+          earliestAnswer: current.earliestAnswer < response.answeredAt 
+            ? current.earliestAnswer 
+            : response.answeredAt
+        });
+      }
+    }
+
+    /* Get all users with correct answers */
     const users = await prisma.user.findMany({
-      where: { id: { in: [...firstAnswerMap.keys()] } },
+      where: { id: { in: Array.from(userStats.keys()) } },
       include: { _count: { select: { responses: true } } }
     });
 
-    /* sort: first timestamp wins */
-    users.sort(
-      (a, b) =>
-        firstAnswerMap.get(a.id)!.getTime() -
-        firstAnswerMap.get(b.id)!.getTime()
-    );
+    /* Sort by ranking criteria */
+    users.sort((a, b) => {
+      const statsA = userStats.get(a.id)!;
+      const statsB = userStats.get(b.id)!;
+      
+      // 1. First correct count (desc)
+      if (statsB.firstCorrectCount !== statsA.firstCorrectCount) {
+        return statsB.firstCorrectCount - statsA.firstCorrectCount;
+      }
+      // 2. Total correct (desc)
+      if (statsB.totalCorrect !== statsA.totalCorrect) {
+        return statsB.totalCorrect - statsA.totalCorrect;
+      }
+      // 3. Earliest answer (asc - earlier is better)
+      return statsA.earliestAnswer.getTime() - statsB.earliestAnswer.getTime();
+    });
 
     const clerkUsers = await Promise.all(
       users.slice(0, limit).map(async (user) => {
@@ -58,12 +104,13 @@ export const getLeaderboard = async (
 
     return users.slice(0, limit).map((user, index) => {
       const clerkData = clerkUserMap.get(user.clerkId);
+      const stats = userStats.get(user.id)!;
       return {
         id: user.id,
         username: user.username ?? user.email,
         totalScore: user.totalScore,
         questionsAnswered: user._count.responses,
-        lastAnsweredAt: firstAnswerMap.get(user.id)!,
+        lastAnsweredAt: stats.earliestAnswer,
         imageUrl: clerkData?.imageUrl ?? null,
         rank: index + 1
       };
@@ -71,40 +118,86 @@ export const getLeaderboard = async (
   }
 
   /* -------------------------------------------------
-   * 2.  WEEKLY / MONTHLY  –  order by first answer inside window
+   * 2.  WEEKLY / MONTHLY  –  order by first CORRECT answer inside window
    * ------------------------------------------------- */
   const boundary = new Date();
   boundary.setDate(boundary.getDate() - (range === "weekly" ? 7 : 30));
 
-  /* grab every response in the window */
+  /* Only get correct responses in the window */
   const windowResponses = await prisma.userResponse.findMany({
-    where: { answeredAt: { gte: boundary } },
-    select: { userId: true, answeredAt: true, points: true }
+    where: { 
+      answeredAt: { gte: boundary },
+      isCorrect: true
+    },
+    select: { userId: true, answeredAt: true, questionId: true, points: true },
+    orderBy: { answeredAt: "asc" }
   });
 
-  /* build two maps in one pass */
-  const firstInWindowMap = new Map<string, Date>();
-  const scoreInWindowMap  = new Map<string, number>();
-  for (const r of windowResponses) {
-    /* first timestamp */
-    const cur = firstInWindowMap.get(r.userId);
-    if (!cur || r.answeredAt < cur) firstInWindowMap.set(r.userId, r.answeredAt);
-    /* total points */
-    scoreInWindowMap.set(r.userId, (scoreInWindowMap.get(r.userId) ?? 0) + r.points);
+  /* For each question in window, find who answered correctly first */
+  const questionFirstCorrect = new Map<string, { userId: string; answeredAt: Date }>();
+  for (const response of windowResponses) {
+    const existing = questionFirstCorrect.get(response.questionId);
+    if (!existing || response.answeredAt < existing.answeredAt) {
+      questionFirstCorrect.set(response.questionId, {
+        userId: response.userId,
+        answeredAt: response.answeredAt
+      });
+    }
   }
 
-  const userIds = [...firstInWindowMap.keys()];
+  /* Calculate user stats in window */
+  const userStats = new Map<string, { 
+    firstCorrectCount: number; 
+    totalCorrect: number; 
+    earliestAnswer: Date;
+    totalScore: number;
+  }>();
+  
+  for (const response of windowResponses) {
+    const isFirst = questionFirstCorrect.get(response.questionId)?.userId === response.userId;
+    const current = userStats.get(response.userId);
+    
+    if (!current) {
+      userStats.set(response.userId, {
+        firstCorrectCount: isFirst ? 1 : 0,
+        totalCorrect: 1,
+        earliestAnswer: response.answeredAt,
+        totalScore: response.points
+      });
+    } else {
+      userStats.set(response.userId, {
+        firstCorrectCount: current.firstCorrectCount + (isFirst ? 1 : 0),
+        totalCorrect: current.totalCorrect + 1,
+        earliestAnswer: current.earliestAnswer < response.answeredAt 
+          ? current.earliestAnswer 
+          : response.answeredAt,
+        totalScore: current.totalScore + response.points
+      });
+    }
+  }
+
+  const userIds = Array.from(userStats.keys());
   const users = await prisma.user.findMany({
     where: { id: { in: userIds } },
     include: { _count: { select: { responses: true } } }
   });
 
-  /* sort: first timestamp wins */
-  users.sort(
-    (a, b) =>
-      firstInWindowMap.get(a.id)!.getTime() -
-      firstInWindowMap.get(b.id)!.getTime()
-  );
+  /* Sort by ranking criteria */
+  users.sort((a, b) => {
+    const statsA = userStats.get(a.id)!;
+    const statsB = userStats.get(b.id)!;
+    
+    // 1. First correct count (desc)
+    if (statsB.firstCorrectCount !== statsA.firstCorrectCount) {
+      return statsB.firstCorrectCount - statsA.firstCorrectCount;
+    }
+    // 2. Total correct (desc)
+    if (statsB.totalCorrect !== statsA.totalCorrect) {
+      return statsB.totalCorrect - statsA.totalCorrect;
+    }
+    // 3. Earliest answer (asc - earlier is better)
+    return statsA.earliestAnswer.getTime() - statsB.earliestAnswer.getTime();
+  });
 
   const clerkUsers = await Promise.all(
     users.slice(0, limit).map(async (user) => {
@@ -127,12 +220,13 @@ export const getLeaderboard = async (
 
   return users.slice(0, limit).map((user, index) => {
     const clerkData = clerkUserMap.get(user.clerkId);
+    const stats = userStats.get(user.id)!;
     return {
       id: user.id,
       username: user.username ?? user.email ?? "Player",
-      totalScore: scoreInWindowMap.get(user.id) ?? 0,
+      totalScore: stats.totalScore,
       questionsAnswered: user._count.responses,
-      lastAnsweredAt: firstInWindowMap.get(user.id)!,
+      lastAnsweredAt: stats.earliestAnswer,
       imageUrl: clerkData?.imageUrl ?? null,
       rank: index + 1
     };
