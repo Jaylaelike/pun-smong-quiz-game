@@ -21,7 +21,7 @@ export const DeleteQuestionButton = ({ questionId, onDelete, children, ...props 
       {...props}
       disabled={pending || props.disabled}
       onClick={() => {
-        if (!confirm("ลบคำถามนี้?")) return;
+        if (!confirm("ลบคำถามนี้นะ?")) return;
         startTransition(async () => {
           try {
             await deleteQuestion(questionId);
